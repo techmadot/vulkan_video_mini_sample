@@ -1,4 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
+ï»¿#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 #undef ERROR
@@ -6,8 +6,8 @@
 #include "DeviceContext.h"
 #include "Swapchain.h"
 
-// volk ‚ğƒCƒ“ƒNƒ‹[ƒh.
-// VOLK_IMPLEMENTATION‚ğ’è‹`‚µ‚ÄÀ‘•‚àŠÜ‚ß‚é.
+// volk ã‚’ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰.
+// VOLK_IMPLEMENTATIONã‚’å®šç¾©ã—ã¦å®Ÿè£…ã‚‚å«ã‚ã‚‹.
 //#define VOLK_IMPLEMENTATION
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "Volk/volk.h"
@@ -118,7 +118,7 @@ bool DeviceContext::InitializeDevice(int useGpuIndex)
     {
       if (m_videoDecodeFamily == VK_QUEUE_FAMILY_IGNORED)
       {
-        // H264 ƒTƒ|[ƒg‚µ‚Ä‚éH
+        // H264 ã‚µãƒãƒ¼ãƒˆã—ã¦ã‚‹ï¼Ÿ
         if (m_queueFamilies[i].propertiesVideo.videoCodecOperations & VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR)
         {
           m_videoDecodeFamily = i;
@@ -183,7 +183,7 @@ bool DeviceContext::InitializeDevice(int useGpuIndex)
   }
   volkLoadDevice(m_vkDevice);
 
-  // ƒfƒoƒCƒXƒLƒ…[‚ğæ“¾.
+  // ãƒ‡ãƒã‚¤ã‚¹ã‚­ãƒ¥ãƒ¼ã‚’å–å¾—.
   vkGetDeviceQueue(m_vkDevice, m_graphicsFamily, 0, &m_graphicsQueue);
   vkGetDeviceQueue(m_vkDevice, m_videoDecodeFamily, 0, &m_videoDecodeQueue);
 
@@ -435,7 +435,7 @@ bool DeviceContext::InitializeVkInstance()
   auto glfwRequiredExtensionNames = glfwGetRequiredInstanceExtensions(&glfwRequiredCount);
   std::for_each_n(glfwRequiredExtensionNames, glfwRequiredCount, [&](auto v) { activeInstanceExtensions.push_back(v); });
 
-  // VK_EXT_full_screen_exclusive‚Ì‚½‚ß‚ÉˆË‘¶‚·‚éŠg’£‹@”\‚ğ—LŒø‰»‚·‚é.
+  // VK_EXT_full_screen_exclusiveã®ãŸã‚ã«ä¾å­˜ã™ã‚‹æ‹¡å¼µæ©Ÿèƒ½ã‚’æœ‰åŠ¹åŒ–ã™ã‚‹.
   auto instanceExtensionRequired = {
     VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
     VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
@@ -525,7 +525,7 @@ uint32_t DeviceContext::GetMemoryTypeIndex(VkMemoryRequirements2 reqs, VkMemoryP
   {
     if (requestBits & 1)
     {
-      // —v‹‚³‚ê‚½ƒƒ‚ƒŠƒvƒƒpƒeƒB‚Æˆê’v‚·‚é‚à‚Ì‚ğŒ©‚Â‚¯‚é.
+      // è¦æ±‚ã•ã‚ŒãŸãƒ¡ãƒ¢ãƒªãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã¨ä¸€è‡´ã™ã‚‹ã‚‚ã®ã‚’è¦‹ã¤ã‘ã‚‹.
       const auto types = memoryProps.memoryTypes[i];
       if ((types.propertyFlags & flags) == flags)
       {

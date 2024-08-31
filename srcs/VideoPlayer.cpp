@@ -1,4 +1,4 @@
-#define VK_USE_PLATFORM_WIN32_KHR
+﻿#define VK_USE_PLATFORM_WIN32_KHR
 #include "Volk/volk.h"
 
 #include <filesystem>
@@ -49,7 +49,7 @@ bool VideoPlayer::Initialize(const char* filePath)
 
 	auto devCtx = DeviceContext::GetContext();
 
-	// ����p�̃r�b�g�X�g���[��.
+	// 動画用のビットストリーム.
 	{
 		auto numMemoryFrames = DPB::SlotCount + 1;
 		uint64_t bufferSize = m_decoder->m_videoData.maxMemoryFrameSizeBytes * numMemoryFrames;
@@ -87,7 +87,7 @@ bool VideoPlayer::Initialize(const char* filePath)
 		}
 	}
 
-	// DPB �̗p��.
+	// DPB の用意.
 	for (int i = 0; i < DPB::SlotCount; ++i)
 	{
 		VmaAllocationCreateInfo allocationCI{
@@ -232,7 +232,7 @@ void VideoPlayer::Update(VkCommandBuffer graphicsCmdBuffer, double elapsedTime)
 	}
 	if (!m_isPrepared && DPB::SlotCount <= m_outputTexturesUsed.size() )
 	{
-		// �Œ���̃f�[�^�����܂����珀�������Ƃ���.
+		// 最低限のデータが溜まったら準備完了とする.
 		m_isPrepared = true;
 	}
 
@@ -244,7 +244,7 @@ void VideoPlayer::Update(VkCommandBuffer graphicsCmdBuffer, double elapsedTime)
 		0, nullptr, 0, nullptr, 0, nullptr);
 	vkCmdResetEvent(graphicsCmdBuffer, m_evtVideoPlayer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
 
-	// ���M.
+	// 送信.
 	auto devCtx = DeviceContext::GetContext();
 	auto& commandBufferInfo = m_commandBuffersInfo[devCtx->GetSwapchain()->GetCurrentIndex()];
 	vkEndCommandBuffer(commandBufferInfo.graphicsCommandBuffer);
@@ -376,7 +376,7 @@ void VideoPlayer::VideoDecodeCore(std::shared_ptr<Decoder> decoder, const Decode
 		.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
 		.videoSession = decoder->m_videoSession,
 		.videoSessionParameters = m_decoder->m_videoSessionParameters,
-		.referenceSlotCount = operation->dpbReferenceCount + 1, // �J�����g����+1
+		.referenceSlotCount = operation->dpbReferenceCount + 1, // カレント分を+1
 	};
 	if (beginInfo.referenceSlotCount > 0)
 	{
@@ -578,7 +578,7 @@ const VideoPlayer::OutputImage& VideoPlayer::GetVideoTexture()
 	return m_outputTexturesUsed[m_video_cursor.frameIndex];
 }
 
-// �f�R�[�h�ς݁E�\���t���[��������
+// デコード済み・表示フレームを検索
 void VideoPlayer::UpdateDisplayFrame(double elapsed)
 {
 	if (!m_isPrepared || m_isStopped)
@@ -593,7 +593,7 @@ void VideoPlayer::UpdateDisplayFrame(double elapsed)
 			[=](auto& frame) { return frame.display_order == playIndex; });
 		if (frameIt == m_outputTexturesUsed.end())
 		{
-			// ��ԋ߂����̂�������.
+			// 一番近いものを見つける.
 			int indexAbs = INT_MAX;
 			int indexOfFrame = -1;
 			for (int i = 0; auto & frame : m_outputTexturesUsed)
@@ -615,25 +615,25 @@ void VideoPlayer::UpdateDisplayFrame(double elapsed)
 	auto frameIt = FindVideoFrame(m_video_cursor.playIndex);
 	assert(frameIt != m_outputTexturesUsed.end());
 
-	// �o�ߎ��ԕ�������.
+	// 経過時間分を処理.
 	frameIt->duration -= elapsed;
 	if (frameIt->duration > 0) {
 		m_video_cursor.frameIndex = int(std::distance(m_outputTexturesUsed.begin(), frameIt));
 		return;
 	}
 
-	double remain = std::abs(frameIt->duration);	// �[�����͎��̃t���[���֎����z��.
+	double remain = std::abs(frameIt->duration);	// 端数分は次のフレームへ持ち越し.
 
 	m_video_cursor.playIndex++;
 	if (m_decoder->m_videoData.frameInfos.size() <= m_video_cursor.playIndex)
 	{
-		// �����ȍ~�֓��B.
+		// 末尾以降へ到達.
 		m_video_cursor.playIndex = int(m_decoder->m_videoData.frameInfos.size() - 1);
 		m_isStopped = true;
 	}
 	else
 	{
-		// �폜����.
+		// 削除処理.
 		m_outputTexturesFree.push_back(*frameIt);
 		m_outputTexturesUsed.erase(frameIt);
 	}
@@ -725,13 +725,13 @@ void VideoPlayer::UpdateDecodeVideo()
 	decodeOpe.pDPBs = DPBs.data();
 	decodeOpe.pDPBviews = DPBViews.data();
 
-	m_decodeOpration = decodeOpe;	// �\���p�փR�s�[.
+	m_decodeOpration = decodeOpe;	// 表示用へコピー.
 
 	VideoDecodePreBarrier(videoCmdBuffer);
 
 	VideoDecodeCore(m_decoder, &decodeOpe, videoCmdBuffer);
 
-	// DPB�Ǘ�.
+	// DPB管理.
 	if (frameInfo.referencePriority > 0)
 	{
 		if (m_dpb.nextRef >= m_dpb.referenceUsage.size())
@@ -747,7 +747,7 @@ void VideoPlayer::UpdateDecodeVideo()
 	m_flags |= Flags::eNeedResolve;
 	m_flags |= Flags::eInitiallFirstFrameDecoded;
 
-	// �ҋ@�t���[���֒ǉ�.
+	// 待機フレームへ追加.
 	if (m_outputTexturesFree.empty())
 	{
 		auto newImage = CreateVideoTexture();
@@ -761,11 +761,11 @@ void VideoPlayer::UpdateDecodeVideo()
 	output.display_order = m_decoder->m_videoData.frameInfos[m_current_frame].displayOrder;
 	output.duration = m_decoder->m_videoData.frameInfos[m_current_frame].duration;
 
-	// DPB->�o�͐��.
+	// DPB->出力先へ.
 	CopyToTexture(videoCmdBuffer, output);
 	m_outputTexturesUsed.push_back(std::move(output));
 
-	// �����DPB�p�Ƀo���A��ݒ�.
+	// 次回のDPB用にバリアを設定.
 	VideoDecodePostBarrier(videoCmdBuffer);
 
 	vkEndCommandBuffer(videoCmdBuffer);
@@ -773,7 +773,7 @@ void VideoPlayer::UpdateDecodeVideo()
 	m_current_frame = (m_current_frame+1) % m_decoder->m_videoData.frameInfos.size();
 
 	{
-		// �e�N�X�`���Ƃ��Ďg�p���邽�߂̃��C�A�E�g��.
+		// テクスチャとして使用するためのレイアウトへ.
 		VkImageMemoryBarrier2 barrier{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
 			.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
@@ -895,7 +895,7 @@ void VideoPlayer::VideoDecodePostBarrier(VkCommandBuffer videoCmdBuffer)
 	auto& currentDPBState = m_dpb.resourceState[m_dpb.currentSlot];
 	auto& srcImageDPB = m_dpb.image[m_dpb.currentSlot];
 
-	// ����DPB�Ŏg�����߂̃o���A�ݒ�.
+	// 次のDPBで使うためのバリア設定.
   VkImageMemoryBarrier2 barrier{
     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
     .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
@@ -934,7 +934,7 @@ void VideoPlayer::CopyToTexture(VkCommandBuffer videoCmdBuffer, OutputImage& dst
 	auto decodeQueueFamilyIndex = devCtx->GetDecoderQueueFamilyIndex();
 	auto& currentDPBState = m_dpb.resourceState[m_dpb.currentSlot];
 	auto& srcImageDPB = m_dpb.image[m_dpb.currentSlot];
-	// DPB��]�����֑J��.
+	// DPBを転送元へ遷移.
 	{
 		VkImageMemoryBarrier2 barrier{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -959,7 +959,7 @@ void VideoPlayer::CopyToTexture(VkCommandBuffer videoCmdBuffer, OutputImage& dst
 		currentDPBState.flag = barrier.dstAccessMask;
 		imageBarriers.push_back(barrier);
 	}
-	// �o�͐��]�����Ԃ֑J��.
+	// 出力先を転送先状態へ遷移.
 	{
 		VkImageMemoryBarrier2 barrier{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -997,7 +997,7 @@ void VideoPlayer::CopyToTexture(VkCommandBuffer videoCmdBuffer, OutputImage& dst
 	}
 
 
-	// �e�N�X�`���Ƃ��ăR�s�[.
+	// テクスチャとしてコピー.
 	const auto width = m_decoder->m_videoData.width;
 	const auto height = m_decoder->m_videoData.height;
 	VkImageCopy2 regions[] = {
@@ -1082,7 +1082,7 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 		devCtx->GetGPU(), &m_settings.profileInfo, &m_properties.caps);
 	assert(res == VK_SUCCESS);
 
-	// �r�f�I�t�H�[�}�b�g�̊m�F.
+	// ビデオフォーマットの確認.
 	m_settings.profileListInfo = vk::VideoProfileListInfoKHR();
 	m_settings.profileListInfo.profileCount = 1;
 	m_settings.profileListInfo.pProfiles = &m_settings.profileInfo;
@@ -1108,7 +1108,7 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 	assert(videoFormatProps.size() != 0);
 	m_properties.formatProps = videoFormatProps.front();
 
-	// �t�@�C���ǂݍ���.
+	// ファイル読み込み.
 	ParseMp4Data(filePath);
 
 	auto numMemoryFrames = m_videoData.numDPBslots + 1;
@@ -1232,7 +1232,7 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 		VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
 
 #if _DEBUG
-	// ���̃t���O�𗧂ĂĂ����ƁAnsight graphics �Œ��g��������x�m�F�\.
+	// このフラグを立てておくと、nsight graphics で中身をある程度確認可能.
 	m_properties.usageDPB |= VK_IMAGE_USAGE_SAMPLED_BIT;
 #endif
 
