@@ -49,7 +49,7 @@ bool VideoPlayer::Initialize(const char* filePath)
 
 	auto devCtx = DeviceContext::GetContext();
 
-	// “®‰æ—p‚ÌƒrƒbƒgƒXƒgƒŠ[ƒ€.
+	// ï¿½ï¿½ï¿½ï¿½pï¿½Ìƒrï¿½bï¿½gï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½.
 	{
 		auto numMemoryFrames = DPB::SlotCount + 1;
 		uint64_t bufferSize = m_decoder->m_videoData.maxMemoryFrameSizeBytes * numMemoryFrames;
@@ -87,7 +87,7 @@ bool VideoPlayer::Initialize(const char* filePath)
 		}
 	}
 
-	// DPB ‚Ì—pˆÓ.
+	// DPB ï¿½Ì—pï¿½ï¿½.
 	for (int i = 0; i < DPB::SlotCount; ++i)
 	{
 		VmaAllocationCreateInfo allocationCI{
@@ -232,7 +232,7 @@ void VideoPlayer::Update(VkCommandBuffer graphicsCmdBuffer, double elapsedTime)
 	}
 	if (!m_isPrepared && DPB::SlotCount <= m_outputTexturesUsed.size() )
 	{
-		// Å’áŒÀ‚Ìƒf[ƒ^‚ª—­‚Ü‚Á‚½‚ç€”õŠ®—¹‚Æ‚·‚é.
+		// ï¿½Å’ï¿½ï¿½ï¿½Ìƒfï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ç€ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½.
 		m_isPrepared = true;
 	}
 
@@ -244,7 +244,7 @@ void VideoPlayer::Update(VkCommandBuffer graphicsCmdBuffer, double elapsedTime)
 		0, nullptr, 0, nullptr, 0, nullptr);
 	vkCmdResetEvent(graphicsCmdBuffer, m_evtVideoPlayer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
 
-	// ‘—M.
+	// ï¿½ï¿½ï¿½M.
 	auto devCtx = DeviceContext::GetContext();
 	auto& commandBufferInfo = m_commandBuffersInfo[devCtx->GetSwapchain()->GetCurrentIndex()];
 	vkEndCommandBuffer(commandBufferInfo.graphicsCommandBuffer);
@@ -330,7 +330,7 @@ void VideoPlayer::VideoDecodeCore(std::shared_ptr<Decoder> decoder, const Decode
 	VkVideoPictureResourceInfoKHR referenceSlotPictures[DPB::SlotCount] = { };
 	VkVideoDecodeH264DpbSlotInfoKHR dpbSlotH264[DPB::SlotCount] = { };
 	StdVideoDecodeH264ReferenceInfo referenceInfosH264[DPB::SlotCount] = { };
-	for (uint32_t i = 0; i < DPB::SlotCount; ++i)
+	for (uint32_t i = 0; i < operation->dpbSlotNum; ++i)
 	{
 		auto& slot = referenceSlotInfos[i];
 		auto& pic = referenceSlotPictures[i];
@@ -376,7 +376,7 @@ void VideoPlayer::VideoDecodeCore(std::shared_ptr<Decoder> decoder, const Decode
 		.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
 		.videoSession = decoder->m_videoSession,
 		.videoSessionParameters = m_decoder->m_videoSessionParameters,
-		.referenceSlotCount = operation->dpbReferenceCount + 1, // ƒJƒŒƒ“ƒg•ª‚ğ+1
+		.referenceSlotCount = operation->dpbReferenceCount + 1, // ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½+1
 	};
 	if (beginInfo.referenceSlotCount > 0)
 	{
@@ -578,7 +578,7 @@ const VideoPlayer::OutputImage& VideoPlayer::GetVideoTexture()
 	return m_outputTexturesUsed[m_video_cursor.frameIndex];
 }
 
-// ƒfƒR[ƒhÏ‚İE•\¦ƒtƒŒ[ƒ€‚ğŒŸõ
+// ï¿½fï¿½Rï¿½[ï¿½hï¿½Ï‚İEï¿½\ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void VideoPlayer::UpdateDisplayFrame(double elapsed)
 {
 	if (!m_isPrepared || m_isStopped)
@@ -593,7 +593,7 @@ void VideoPlayer::UpdateDisplayFrame(double elapsed)
 			[=](auto& frame) { return frame.display_order == playIndex; });
 		if (frameIt == m_outputTexturesUsed.end())
 		{
-			// ˆê”Ô‹ß‚¢‚à‚Ì‚ğŒ©‚Â‚¯‚é.
+			// ï¿½ï¿½Ô‹ß‚ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½.
 			int indexAbs = INT_MAX;
 			int indexOfFrame = -1;
 			for (int i = 0; auto & frame : m_outputTexturesUsed)
@@ -615,25 +615,25 @@ void VideoPlayer::UpdateDisplayFrame(double elapsed)
 	auto frameIt = FindVideoFrame(m_video_cursor.playIndex);
 	assert(frameIt != m_outputTexturesUsed.end());
 
-	// Œo‰ßŠÔ•ª‚ğˆ—.
+	// ï¿½oï¿½ßï¿½ï¿½Ô•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 	frameIt->duration -= elapsed;
 	if (frameIt->duration > 0) {
 		m_video_cursor.frameIndex = int(std::distance(m_outputTexturesUsed.begin(), frameIt));
 		return;
 	}
 
-	double remain = std::abs(frameIt->duration);	// ’[”•ª‚ÍŸ‚ÌƒtƒŒ[ƒ€‚Ö‚¿‰z‚µ.
+	double remain = std::abs(frameIt->duration);	// ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Íï¿½ï¿½Ìƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½ï¿½zï¿½ï¿½.
 
 	m_video_cursor.playIndex++;
 	if (m_decoder->m_videoData.frameInfos.size() <= m_video_cursor.playIndex)
 	{
-		// ––”öˆÈ~‚Ö“’B.
+		// ï¿½ï¿½ï¿½ï¿½ï¿½È~ï¿½Ö“ï¿½ï¿½B.
 		m_video_cursor.playIndex = int(m_decoder->m_videoData.frameInfos.size() - 1);
 		m_isStopped = true;
 	}
 	else
 	{
-		// íœˆ—.
+		// ï¿½íœï¿½ï¿½ï¿½ï¿½.
 		m_outputTexturesFree.push_back(*frameIt);
 		m_outputTexturesUsed.erase(frameIt);
 	}
@@ -721,16 +721,17 @@ void VideoPlayer::UpdateDecodeVideo()
 	decodeOpe.dpbReferenceSlots = m_dpb.referenceUsage.data();
 	decodeOpe.dpbPoc = m_dpb.pocStatus;
 	decodeOpe.dpbFramenum = m_dpb.framenumStatus;
+	decodeOpe.dpbSlotNum = DPBSlotNum;
 	decodeOpe.pDPBs = DPBs.data();
 	decodeOpe.pDPBviews = DPBViews.data();
 
-	m_decodeOpration = decodeOpe;	// •\¦—p‚ÖƒRƒs[.
+	m_decodeOpration = decodeOpe;	// ï¿½\ï¿½ï¿½ï¿½pï¿½ÖƒRï¿½sï¿½[.
 
 	VideoDecodePreBarrier(videoCmdBuffer);
 
 	VideoDecodeCore(m_decoder, &decodeOpe, videoCmdBuffer);
 
-	// DPBŠÇ—.
+	// DPBï¿½Ç—ï¿½.
 	if (frameInfo.referencePriority > 0)
 	{
 		if (m_dpb.nextRef >= m_dpb.referenceUsage.size())
@@ -746,7 +747,7 @@ void VideoPlayer::UpdateDecodeVideo()
 	m_flags |= Flags::eNeedResolve;
 	m_flags |= Flags::eInitiallFirstFrameDecoded;
 
-	// ‘Ò‹@ƒtƒŒ[ƒ€‚Ö’Ç‰Á.
+	// ï¿½Ò‹@ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ö’Ç‰ï¿½.
 	if (m_outputTexturesFree.empty())
 	{
 		auto newImage = CreateVideoTexture();
@@ -760,11 +761,11 @@ void VideoPlayer::UpdateDecodeVideo()
 	output.display_order = m_decoder->m_videoData.frameInfos[m_current_frame].displayOrder;
 	output.duration = m_decoder->m_videoData.frameInfos[m_current_frame].duration;
 
-	// DPB->o—Íæ‚Ö.
+	// DPB->ï¿½oï¿½Íï¿½ï¿½.
 	CopyToTexture(videoCmdBuffer, output);
 	m_outputTexturesUsed.push_back(std::move(output));
 
-	// Ÿ‰ñ‚ÌDPB—p‚ÉƒoƒŠƒA‚ğİ’è.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½DPBï¿½pï¿½Éƒoï¿½ï¿½ï¿½Aï¿½ï¿½İ’ï¿½.
 	VideoDecodePostBarrier(videoCmdBuffer);
 
 	vkEndCommandBuffer(videoCmdBuffer);
@@ -772,7 +773,7 @@ void VideoPlayer::UpdateDecodeVideo()
 	m_current_frame = (m_current_frame+1) % m_decoder->m_videoData.frameInfos.size();
 
 	{
-		// ƒeƒNƒXƒ`ƒƒ‚Æ‚µ‚Äg—p‚·‚é‚½‚ß‚ÌƒŒƒCƒAƒEƒg‚Ö.
+		// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ägï¿½pï¿½ï¿½ï¿½é‚½ï¿½ß‚Ìƒï¿½ï¿½Cï¿½Aï¿½Eï¿½gï¿½ï¿½.
 		VkImageMemoryBarrier2 barrier{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
 			.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
@@ -894,7 +895,7 @@ void VideoPlayer::VideoDecodePostBarrier(VkCommandBuffer videoCmdBuffer)
 	auto& currentDPBState = m_dpb.resourceState[m_dpb.currentSlot];
 	auto& srcImageDPB = m_dpb.image[m_dpb.currentSlot];
 
-	// Ÿ‚ÌDPB‚Åg‚¤‚½‚ß‚ÌƒoƒŠƒAİ’è.
+	// ï¿½ï¿½ï¿½ï¿½DPBï¿½Ågï¿½ï¿½ï¿½ï¿½ï¿½ß‚Ìƒoï¿½ï¿½ï¿½Aï¿½İ’ï¿½.
   VkImageMemoryBarrier2 barrier{
     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
     .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
@@ -933,7 +934,7 @@ void VideoPlayer::CopyToTexture(VkCommandBuffer videoCmdBuffer, OutputImage& dst
 	auto decodeQueueFamilyIndex = devCtx->GetDecoderQueueFamilyIndex();
 	auto& currentDPBState = m_dpb.resourceState[m_dpb.currentSlot];
 	auto& srcImageDPB = m_dpb.image[m_dpb.currentSlot];
-	// DPB‚ğ“]‘—Œ³‚Ö‘JˆÚ.
+	// DPBï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Ö‘Jï¿½ï¿½.
 	{
 		VkImageMemoryBarrier2 barrier{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -958,7 +959,7 @@ void VideoPlayer::CopyToTexture(VkCommandBuffer videoCmdBuffer, OutputImage& dst
 		currentDPBState.flag = barrier.dstAccessMask;
 		imageBarriers.push_back(barrier);
 	}
-	// o—Íæ‚ğ“]‘—æó‘Ô‚Ö‘JˆÚ.
+	// ï¿½oï¿½Íï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Ö‘Jï¿½ï¿½.
 	{
 		VkImageMemoryBarrier2 barrier{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -996,7 +997,7 @@ void VideoPlayer::CopyToTexture(VkCommandBuffer videoCmdBuffer, OutputImage& dst
 	}
 
 
-	// ƒeƒNƒXƒ`ƒƒ‚Æ‚µ‚ÄƒRƒs[.
+	// ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÄƒRï¿½sï¿½[.
 	const auto width = m_decoder->m_videoData.width;
 	const auto height = m_decoder->m_videoData.height;
 	VkImageCopy2 regions[] = {
@@ -1081,7 +1082,7 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 		devCtx->GetGPU(), &m_settings.profileInfo, &m_properties.caps);
 	assert(res == VK_SUCCESS);
 
-	// ƒrƒfƒIƒtƒH[ƒ}ƒbƒg‚ÌŠm”F.
+	// ï¿½rï¿½fï¿½Iï¿½tï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½ÌŠmï¿½F.
 	m_settings.profileListInfo = vk::VideoProfileListInfoKHR();
 	m_settings.profileListInfo.profileCount = 1;
 	m_settings.profileListInfo.pProfiles = &m_settings.profileInfo;
@@ -1107,7 +1108,7 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 	assert(videoFormatProps.size() != 0);
 	m_properties.formatProps = videoFormatProps.front();
 
-	// ƒtƒ@ƒCƒ‹“Ç‚İ‚İ.
+	// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½.
 	ParseMp4Data(filePath);
 
 	auto numMemoryFrames = m_videoData.numDPBslots + 1;
@@ -1231,7 +1232,7 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 		VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
 
 #if _DEBUG
-	// ‚±‚Ìƒtƒ‰ƒO‚ğ—§‚Ä‚Ä‚¨‚­‚ÆAnsight graphics ‚Å’†g‚ğ‚ ‚é’ö“xŠm”F‰Â”\.
+	// ï¿½ï¿½ï¿½Ìƒtï¿½ï¿½ï¿½Oï¿½ğ—§‚Ä‚Ä‚ï¿½ï¿½ï¿½ï¿½ÆAnsight graphics ï¿½Å’ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½mï¿½Fï¿½Â”\.
 	m_properties.usageDPB |= VK_IMAGE_USAGE_SAMPLED_BIT;
 #endif
 

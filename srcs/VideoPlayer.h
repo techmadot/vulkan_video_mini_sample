@@ -24,10 +24,10 @@ public:
 	bool Initialize(const char* filePath);
 	void Shutdown();
 
-	// Ä¶‚ÌƒJƒEƒ“ƒ^‚ği‚ß‚é‚È‚ÇAƒRƒ}ƒ“ƒhÏ‚İ‚İ‚ª•s—v‚Èˆ—‚ğÀs.
+	// ï¿½Äï¿½ï¿½ÌƒJï¿½Eï¿½ï¿½ï¿½^ï¿½ï¿½iï¿½ß‚ï¿½È‚ÇAï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½Ï‚İï¿½ï¿½İ‚ï¿½ï¿½sï¿½vï¿½Èï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s.
 	void Update(VkCommandBuffer graphicsCmdBuffer, double timestamp);
 
-	// ƒfƒR[ƒhˆ—‚ğƒRƒ}ƒ“ƒh‚ÉÏ‚Ş.
+	// ï¿½fï¿½Rï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ÉÏ‚ï¿½.
 	void UpdateDecode(VkCommandBuffer command, std::vector<VkImageMemoryBarrier2>& requestBarrierOnGfx);
 
 	class Decoder {
@@ -146,6 +146,7 @@ public:
 			const int* dpbPoc = nullptr;
 			const int* dpbFramenum = nullptr;
 
+			uint32_t dpbSlotNum = 0;
 			VkImage* pDPBs;
 			VkImageView* pDPBviews;
 		};
@@ -270,9 +271,9 @@ private:
 	std::vector<OutputImage> m_outputTexturesFree;
 	std::vector<OutputImage> m_outputTexturesUsed;
 
-	// Ä¶—p‚ÌƒeƒNƒXƒ`ƒƒ‚ª€”õ‚Å‚«‚Ä‚¢‚é‚©.
+	// ï¿½Äï¿½ï¿½pï¿½Ìƒeï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ä‚ï¿½ï¿½é‚©.
 	bool IsReady();
-	// Œ»İ‚ÌÄ¶ˆÊ’u‚ª¦‚·ƒeƒNƒXƒ`ƒƒ‚ğæ“¾.
+	// ï¿½ï¿½ï¿½İ‚ÌÄï¿½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾.
 	const OutputImage& GetVideoTexture();
 
 	enum {
@@ -289,13 +290,13 @@ private:
 
 	struct VideoCursorInfo
 	{
-		int32_t playIndex;	// Ä¶’†‚ÌƒtƒŒ[ƒ€”Ô†‚ğw‚·.
-		int32_t frameIndex;	// ƒfƒR[ƒhÏ‚İ”z—ñ“àƒCƒ“ƒfƒbƒNƒX‚ğw‚·.
+		int32_t playIndex;	// ï¿½Äï¿½ï¿½ï¿½ï¿½Ìƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ï¿½ï¿½wï¿½ï¿½.
+		int32_t frameIndex;	// ï¿½fï¿½Rï¿½[ï¿½hï¿½Ï‚İ”zï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½ï¿½ï¿½wï¿½ï¿½.
 	} m_video_cursor;
 	bool m_isPrepared = false;
 	bool m_isStopped = false;
 
 	
-	Decoder::VideoDecodeOperation m_decodeOpration;	// î•ñ•\¦—p.
+	Decoder::VideoDecodeOperation m_decodeOpration;	// ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½p.
 	std::vector<int> m_DPBSlotUsed;
 };
