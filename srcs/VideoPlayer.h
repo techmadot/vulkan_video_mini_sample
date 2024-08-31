@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <fstream>
 #include <deque>
@@ -24,10 +24,10 @@ public:
 	bool Initialize(const char* filePath);
 	void Shutdown();
 
-	// �Đ��̃J�E���^��i�߂�ȂǁA�R�}���h�ςݍ��݂��s�v�ȏ��������s.
+	// 再生のカウンタを進めるなど、コマンド積み込みが不要な処理を実行.
 	void Update(VkCommandBuffer graphicsCmdBuffer, double timestamp);
 
-	// �f�R�[�h�������R�}���h�ɐς�.
+	// デコード処理をコマンドに積む.
 	void UpdateDecode(VkCommandBuffer command, std::vector<VkImageMemoryBarrier2>& requestBarrierOnGfx);
 
 	class Decoder {
@@ -271,9 +271,9 @@ private:
 	std::vector<OutputImage> m_outputTexturesFree;
 	std::vector<OutputImage> m_outputTexturesUsed;
 
-	// �Đ��p�̃e�N�X�`���������ł��Ă��邩.
+	// 再生用のテクスチャが準備できているか.
 	bool IsReady();
-	// ���݂̍Đ��ʒu�������e�N�X�`�����擾.
+	// 現在の再生位置が示すテクスチャを取得.
 	const OutputImage& GetVideoTexture();
 
 	enum {
@@ -290,13 +290,13 @@ private:
 
 	struct VideoCursorInfo
 	{
-		int32_t playIndex;	// �Đ����̃t���[���ԍ����w��.
-		int32_t frameIndex;	// �f�R�[�h�ςݔz����C���f�b�N�X���w��.
+		int32_t playIndex;	// 再生中のフレーム番号を指す.
+		int32_t frameIndex;	// デコード済み配列内インデックスを指す.
 	} m_video_cursor;
 	bool m_isPrepared = false;
 	bool m_isStopped = false;
 
 	
-	Decoder::VideoDecodeOperation m_decodeOpration;	// ���\���p.
+	Decoder::VideoDecodeOperation m_decodeOpration;	// 情報表示用.
 	std::vector<int> m_DPBSlotUsed;
 };

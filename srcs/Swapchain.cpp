@@ -1,4 +1,4 @@
-#include "Swapchain.h"
+ï»¿#include "Swapchain.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "Volk/volk.h"
@@ -26,7 +26,7 @@ bool Swapchain::Initialize(GLFWwindow* window, VkFormat desiredFormat)
   std::vector<VkSurfaceFormatKHR> formats(surfaceCount);
   vkGetPhysicalDeviceSurfaceFormatsKHR(devCtx->GetGPU(), m_surface, &surfaceCount, formats.data());
 
-  // ƒXƒƒbƒvƒ`ƒFƒCƒ“‚ÌƒtƒH[ƒ}ƒbƒg‚ğŒˆ’è.
+  // ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ã‚¤ãƒ³ã®ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’æ±ºå®š.
   for (auto& format : formats)
   {
     if (format.format == desiredFormat)

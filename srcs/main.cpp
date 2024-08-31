@@ -1,14 +1,14 @@
-#define WIN32_LEAN_AND_MEAN
+ï»¿#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
 
 #undef ERROR
 #ifndef VK_NO_PROTOTYPES
-# error "VK_NO_PROTOTYPES‚ğ’è‹`‚µ‚Ä‰º‚³‚¢.volk‚ğg—p‚µ‚Ä‚¢‚Ü‚·"
+# error "VK_NO_PROTOTYPESã‚’å®šç¾©ã—ã¦ä¸‹ã•ã„.volkã‚’ä½¿ç”¨ã—ã¦ã„ã¾ã™"
 #endif
 
-// volk ‚ğƒCƒ“ƒNƒ‹[ƒh.
-// VOLK_IMPLEMENTATION‚ğ’è‹`‚µ‚ÄÀ‘•‚àŠÜ‚ß‚é.
+// volk ã‚’ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰.
+// VOLK_IMPLEMENTATIONã‚’å®šç¾©ã—ã¦å®Ÿè£…ã‚‚å«ã‚ã‚‹.
 #define VOLK_IMPLEMENTATION
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "Volk/volk.h"
@@ -47,16 +47,16 @@ class VkVideoDecodeApp
 public:
 	bool Initialize()
 	{
-		// GLFW‚Ì‰Šú‰».
+		// GLFWã®åˆæœŸåŒ–.
 		if (!glfwInit()) {
 			return false;
 		}
 
-		// GLFW‚ÅVulkan‚ğg—p‚·‚é‚±‚Æ‚ğw’è.
+		// GLFWã§Vulkanã‚’ä½¿ç”¨ã™ã‚‹ã“ã¨ã‚’æŒ‡å®š.
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-		// ƒEƒBƒ“ƒhƒE‚ğ¶¬.
+		// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ç”Ÿæˆ.
 		m_window = glfwCreateWindow(1280, 720, "Sample", nullptr, nullptr);
 		if (!m_window)
 		{
@@ -169,7 +169,7 @@ public:
 		cfg.SizePixels = 15;
 		io.Fonts->AddFontDefault(&cfg);
 
-		// ƒŠƒ\[ƒXƒtƒHƒ‹ƒ_‚Éƒ€[ƒr[ƒtƒ@ƒCƒ‹‚ğ”z’u‚µ‚Ä“Ç‚İ‚Ş.
+		// ãƒªã‚½ãƒ¼ã‚¹ãƒ•ã‚©ãƒ«ãƒ€ã«ãƒ ãƒ¼ãƒ“ãƒ¼ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é…ç½®ã—ã¦èª­ã¿è¾¼ã‚€.
 		m_videoPlayer.Initialize("res/oceans.mp4");
 
 		VkSemaphoreCreateInfo semaphoreCreateInfo{
@@ -224,7 +224,7 @@ public:
 			};
 			vkBeginCommandBuffer(frame.commandBuffer, &beginInfo);
 
-			// ƒfƒR[ƒh.
+			// ãƒ‡ã‚³ãƒ¼ãƒ‰.
 			m_videoPlayer.Update(frame.commandBuffer, elapsed);
 
 
@@ -244,7 +244,7 @@ public:
 			if(m_videoPlayer.IsReady())
 			{
 				const auto& videoTex = m_videoPlayer.GetVideoTexture();
-				// ƒeƒNƒXƒ`ƒƒ‚ğ‘‚«‚ñ‚Å‚İ‚é
+				// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’æ›¸ãè¾¼ã‚“ã§ã¿ã‚‹
 				VkDescriptorImageInfo imageInfo{
 					.sampler = VK_NULL_HANDLE,
 					.imageView = videoTex.texture.view,
