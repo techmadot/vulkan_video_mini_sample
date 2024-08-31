@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iomanip>
 #include <functional>
+#include <span>
 
 #include "DeviceContext.h"
 
@@ -1249,6 +1250,30 @@ void VideoPlayer::Decoder::Initialize(const char* filePath)
 	m_videoData.inputStream.seekg(0, std::ios::beg);
 }
 
+namespace {
+
+// Turn an EBSP (Encapsulated Byte Sequence Payload) into an RBSP (Raw Byte Sequence Payload)
+std::vector<uint8_t> RemoveEmulationPreventionBytes(std::span<const uint8_t> ebsp)
+{
+  std::vector<uint8_t> rbsp;
+  rbsp.reserve(ebsp.size());
+  for (size_t i = 0; i < ebsp.size(); ++i)
+  {
+    if (i + 2 < ebsp.size() && ebsp[i] == 0 && ebsp[i + 1] == 0 && ebsp[i + 2] == 3)
+    {
+      rbsp.push_back(ebsp[i]);
+      rbsp.push_back(ebsp[i + 1]);
+      i += 2;
+    }
+    else
+    {
+      rbsp.push_back(ebsp[i]);
+    }
+  }
+  return rbsp;
+}
+
+}
 
 void VideoPlayer::Decoder::ParseMp4Data(const char* filePath)
 {
@@ -1302,15 +1327,20 @@ void VideoPlayer::Decoder::ParseMp4Data(const char* filePath)
 			int index = 0;
 			while (data = MP4D_read_sps(&mp4, ntrack, index, &size))
 			{
-				auto spsData = reinterpret_cast<const uint8_t*>(data);
-				h264::Bitstream bs = {};
-				bs.init(spsData, size);
-
 				h264::NALHeader nal = {};
-				h264::read_nal_header(&nal, &bs);
+				{
+					h264::Bitstream nalHeaderBs = {};
+					nalHeaderBs.init(reinterpret_cast<const uint8_t*>(data), 1);
+					h264::read_nal_header(&nal, &nalHeaderBs);
+				}
+
+				std::vector<uint8_t> nalPayloadRbspData = RemoveEmulationPreventionBytes(std::span(reinterpret_cast<const uint8_t*>(data) + 1, size_t(size - 1)));
+
+				h264::Bitstream nalPayloadBs = {};
+				nalPayloadBs.init(nalPayloadRbspData.data(), nalPayloadRbspData.size());
 
 				h264::SPS sps = { };
-				h264::read_sps(&sps, &bs);
+				h264::read_sps(&sps, &nalPayloadBs);
 
 				// Some validation checks that data parsing returned expected values:
 				// https://stackoverflow.com/questions/6394874/fetching-the-dimensions-of-a-h264video-stream
@@ -1374,7 +1404,7 @@ void VideoPlayer::Decoder::ParseMp4Data(const char* filePath)
 		m_videoData.inputStream.seekg(0, std::ios::beg);
 
 		m_videoData.frameInfos.reserve(track.sample_count);
-		m_videoData.sliceHeaderBytes.reserve(track.sample_count * sizeof(h264::SliceHeader));
+		m_videoData.sliceHeaderBytes.resize(track.sample_count * sizeof(h264::SliceHeader)); // Actual resize to please ASAN
 		m_videoData.sliceHeaderCount = track.sample_count;
 
 		auto* stream = &m_videoData.inputStream;
@@ -1407,11 +1437,20 @@ void VideoPlayer::Decoder::ParseMp4Data(const char* filePath)
 				size += 4;
 				assert(frameBytes >= size);
 
-				h264::Bitstream bs = {};
-				bs.init(&srcBuffer[4], size);
+				uint8_t* lengthPrefixedData = srcBuffer + 4;
+				uint32_t lengthPrefixedDataSize = size - 4;
 
 				h264::NALHeader nal = {};
-				h264::read_nal_header(&nal, &bs);
+				{
+					h264::Bitstream nalHeaderBs = {};
+					nalHeaderBs.init(reinterpret_cast<const uint8_t*>(lengthPrefixedData), 1);
+					h264::read_nal_header(&nal, &nalHeaderBs);
+				}
+
+				std::vector<uint8_t> nalPayloadRbspData = RemoveEmulationPreventionBytes(std::span(reinterpret_cast<const uint8_t*>(lengthPrefixedData) + 1, size_t(lengthPrefixedDataSize - 1)));
+
+				h264::Bitstream nalPayloadBs = {};
+				nalPayloadBs.init(nalPayloadRbspData.data(), nalPayloadRbspData.size());
 
 				bool isIDR = false;
 				switch (nal.type)
@@ -1438,7 +1477,7 @@ void VideoPlayer::Decoder::ParseMp4Data(const char* filePath)
 				 // tig: see Rec. ITU-T H.264 (08/2021) p.66 (7-1)
         h264::SliceHeader* sliceHeader = (h264::SliceHeader*)m_videoData.sliceHeaderBytes.data() + sampleIndex;
         *sliceHeader = {};
-        h264::read_slice_header(sliceHeader, &nal, ppsArray.data(), spsArray.data(), &bs);
+        h264::read_slice_header(sliceHeader, &nal, ppsArray.data(), spsArray.data(), &nalPayloadBs);
 				auto& pps = ppsArray[sliceHeader->pic_parameter_set_id];
 				auto& sps = spsArray[pps.seq_parameter_set_id];
 
